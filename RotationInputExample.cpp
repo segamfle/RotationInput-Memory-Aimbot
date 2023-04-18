@@ -54,20 +54,5 @@ void moveto(float x, float y, int smooth)
 				target.y = 0;
 		}
 	}
-
-	if (settings::aimmode == 0) //mouse aimbot
-	{
-		mouse_event(MOUSEEVENTF_MOVE, static_cast<DWORD>(target.x), static_cast<DWORD>(target.y), NULL, NULL);
-	}
-	if (settings::aimmode == 1) //memory aimbot
-	{
-		if (fn::camera::fov > 40)
-		{
-			memory_event(Vector3(-target.y / 5, target.x / 5, 0));
-		}
-		else
-		{
-			memory_event(Vector3(-target.y / 15, target.x / 15, 0));
-		}
-	}
+	memory_event(Vector3(-target.y / 5, target.x / 5, 0));
 }
