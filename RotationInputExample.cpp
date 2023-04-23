@@ -56,3 +56,11 @@ void moveto(float x, float y, int smooth)
 	}
 	memory_event(Vector3(-target.y / 5, target.x / 5, 0));
 }
+
+void hooked_UpdateRotation( float DeltaTime )
+{
+      *(FRotator*)(p_controller + 0x518) = new_angles;
+      original_update_rotation(DeltaTime)
+      *(FRotator*)(p_controller + 0x518) = FRotator(0,0,0);
+}
+super_mega_ud_hook(APlayerController, idk(index), hooked_UpdateRotation, original_update_rotation);
