@@ -1,12 +1,12 @@
 //https://github.com/EpicGames/UnrealEngine/blob/release/Engine/Source/Runtime/Engine/Classes/GameFramework/PlayerController.h
 /** Input axes values, accumulated each tick. */
 //FRotator RotationInput;
-uintptr_t NetConnection = 0x510; /** The net connection this controller is communicating on, nullptr for local players on server */
+uintptr_t NetConnection = 0x518; /** The net connection this controller is communicating on, nullptr for local players on server */
 uintptr_t RotationInput = NetConnection + 0x8; //size of NetConnection (0x8)
 
 bool memory_event(Vector3 newpos) 
 {
-	write<Vector3>(fn::playercontroller + RotationInput, newpos); //write Vectors to control rotation
+	write<Vector3>(AController + RotationInput, newpos); //write Vectors to control rotation
 	return true;
 }
 
@@ -56,11 +56,3 @@ void moveto(float x, float y, int smooth)
 	}
 	memory_event(Vector3(-target.y / 5, target.x / 5, 0));
 }
-//internal method to be undected memory aimbot
-void hooked_UpdateRotation( float DeltaTime )
-{
-      *(FRotator*)(p_controller + 0x518) = new_angles;
-      original_update_rotation(DeltaTime)
-      *(FRotator*)(p_controller + 0x518) = FRotator(0,0,0);
-}
-super_mega_ud_hook(APlayerController, idk(index), hooked_UpdateRotation, original_update_rotation);
