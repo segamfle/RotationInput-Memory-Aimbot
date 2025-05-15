@@ -1,58 +1,30 @@
 //https://github.com/EpicGames/UnrealEngine/blob/release/Engine/Source/Runtime/Engine/Classes/GameFramework/PlayerController.h
 /** Input axes values, accumulated each tick. */
 //FRotator RotationInput;
-uintptr_t NetConnection = 0x518; /** The net connection this controller is communicating on, nullptr for local players on server */
-uintptr_t RotationInput = NetConnection + 0x8; //size of NetConnection (0x8)
+uintptr_t NetConnection_Offset = 0x518; /** The net connection this controller is communicating on, nullptr for local players on server */
+uintptr_t RotationInput_Offset = NetConnection + sizeof(uintptr_t); //size of NetConnection (0x8)
 
-bool memory_event(Vector3 newpos) 
+bool memory_event(FVector newpos) 
 {
-	write<Vector3>(AController + RotationInput, newpos); //write Vectors to control rotation
-	return true;
+	return write<FVector>(AController + RotationInput_Offset, newpos); //write Vectors to control rotation
 }
 
 
 void moveto(float x, float y, int smooth)
 {
-	int Width = GetSystemMetrics(SM_CXSCREEN);
-	int Height = GetSystemMetrics(SM_CYSCREEN);
-	Vector2 center(Width / 2, Height / 2);
-	Vector2 target(0, 0);
+    int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+    int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+    FVector2D center(screenWidth / 2, screenHeight / 2);
 
-	if (x != 0)
-	{
-		if (x > center.x)
-		{
-			target.x = -(center.x - x);
-			target.x /= smooth;
-			if (target.x + center.x > center.x * 2)
-				target.x = 0;
-		}
+    FVector delta((x - center.x) / smooth, (y - center.y) / smooth);
 
-		if (x < center.x)
-		{
-			target.x = x - center.x;
-			target.x /= smooth;
-			if (target.x + center.x < 0)
-				target.x = 0;
-		}
-	}
-	if (y != 0)
-	{
-		if (y > center.y)
-		{
-			target.y = -(center.y - y);
-			target.y /= smooth;
-			if (target.y + center.y > center.y * 2)
-				target.y = 0;
-		}
+    // X Limit
+    if (x != 0 && (delta.x + center.x < 0 || delta.x + center.x > screenWidth))
+        delta.x = 0;
 
-		if (y < center.y)
-		{
-			target.y = y - center.y;
-			target.y /= smooth;
-			if (target.y + center.y < 0)
-				target.y = 0;
-		}
-	}
-	memory_event(Vector3(-target.y / 5, target.x / 5, 0));
+    // Y Limit
+    if (y != 0 && (delta.y + center.y < 0 || delta.y + center.y > screenHeight))
+        delta.y = 0;
+
+    memory_event(FVector(-delta.y / 5.0f, delta.x / 5.0f, 0)); // You better to implement pixels to deg calculation instead of "x / 5.0f"
 }
